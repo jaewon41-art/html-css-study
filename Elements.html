@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML 요소 도감</title>
+  <!--
+    이 페이지 사용법
+    - 아래 <main> 안의 <section class="el"> 하나가 요소 하나의 설명이에요.
+    - data-tag: 요소 이름, data-name: 한글 이름
+    - <p class="desc">: 설명
+    - <script type="text/html">: 예제 코드. 맨 아래 자바스크립트가 이 코드를
+      '결과' 칸에는 실제로 그려주고, '코드' 칸에는 글자 그대로 보여줘요.
+    - data-code-only가 붙은 요소는 화면에 안 보이는 요소라 코드만 보여줘요.
+  -->
+  <style>
+    :root {
+      --bg: #eef2f6;
+      --paper: #ffffff;
+      --ink: #1b2430;
+      --muted: #5b6878;
+      --line: #d3dbe4;
+      --tag: #2f5bea;
+      --box: #e8a33d;
+      --code-bg: #f4f6f9;
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #12171e;
+        --paper: #1a212b;
+        --ink: #e4e9ef;
+        --muted: #98a4b3;
+        --line: #2c3644;
+        --tag: #7d9bff;
+        --box: #e8b25c;
+        --code-bg: #141a22;
+        color-scheme: dark;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+      line-height: 1.6;
+    }
+    a { color: var(--tag); }
+    .layout {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    /* 왼쪽 목차 */
+    .side {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+    }
+    .side h1 { font-size: 1.15rem; margin: 0 0 4px; }
+    .side .count { color: var(--muted); font-size: .85rem; margin: 0 0 16px; }
+    .side input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--paper);
+      color: var(--ink);
+      font: inherit;
+      margin-bottom: 16px;
+    }
+    .side ol { list-style: none; padding: 0; margin: 0; }
+    .side li a {
+      display: block;
+      padding: 5px 0;
+      color: var(--ink);
+      text-decoration: none;
+      font-size: .95rem;
+    }
+    .side li a:hover { color: var(--tag); }
+    main { padding: 28px 32px 80px; }
+    .cat { margin-bottom: 48px; }
+    .cat > h2 {
+      font-size: 1.4rem;
+      margin: 0 0 4px;
+      padding-top: 12px;
+    }
+    .cat > p { margin: 0 0 18px; color: var(--muted); }
+
+    /* 요소 하나 */
+    .el {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 0 24px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 20px 22px;
+      margin-bottom: 14px;
+    }
+    .el .head { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+    .el .tagname {
+      font-family: Consolas, "D2Coding", ui-monospace, monospace;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--tag);
+      margin: 0;
+    }
+    .el .kname { font-size: 1rem; font-weight: 700; }
+    .el .desc { grid-column: 1 / -1; margin: 6px 0 14px; color: var(--muted); }
+    .panel-title { font-size: .8rem; color: var(--muted); margin: 0 0 6px; }
+    .result {
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      min-height: 60px;
+      overflow-x: auto;
+    }
+    .result.hidden-note { color: var(--muted); font-style: italic; display: flex; align-items: center; }
+    pre.code {
+      margin: 0;
+      background: var(--code-bg);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      overflow-x: auto;
+      font-family: Consolas, "D2Coding", ui-monospace, monospace;
+      font-size: .85rem;
+      line-height: 1.5;
+      white-space: pre;
+    }
+    .el.hide { display: none; }
+
+    /* 구조 요소는 테두리와 이름표를 붙여서 영역이 보이게 */
+    .boxed :is(header, nav, main, section, article, aside, footer, address, hgroup, search, div, figure, menu, fieldset) {
+      outline: 2px dashed var(--box);
+      outline-offset: -2px;
+      padding: 18px 10px 8px;
+      margin: 6px 0;
+      position: relative;
+    }
+    .boxed :is(header, nav, main, section, article, aside, footer, address, hgroup, search, div, figure, menu)::before {
+      position: absolute;
+      top: 0;
+      left: 6px;
+      font: 700 .7rem Consolas, monospace;
+      color: var(--box);
+    }
+    .boxed header::before { content: "<header>"; }
+    .boxed nav::before { content: "<nav>"; }
+    .boxed main::before { content: "<main>"; }
+    .boxed section::before { content: "<section>"; }
+    .boxed article::before { content: "<article>"; }
+    .boxed aside::before { content: "<aside>"; }
+    .boxed footer::before { content: "<footer>"; }
+    .boxed address::before { content: "<address>"; }
+    .boxed hgroup::before { content: "<hgroup>"; }
+    .boxed search::before { content: "<search>"; }
+    .boxed div::before { content: "<div>"; }
+    .boxed figure::before { content: "<figure>"; }
+    .boxed menu::before { content: "<menu>"; }
+    .boxed span { outline: 1px dashed var(--box); }
+
+    .result table { border-collapse: collapse; }
+    .result th, .result td { border: 1px solid var(--line); padding: 4px 10px; }
+    .result img { max-width: 100%; }
+    .result iframe { border: 1px solid var(--line); max-width: 100%; }
+
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .side { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      .side ol { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+      main { padding: 20px 14px 60px; }
+      .el { grid-template-columns: 1fr; }
+      .el .result-wrap { margin-bottom: 14px; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="side">
+    <h1>HTML 요소 도감</h1>
+    <p class="count" id="count"></p>
+    <input type="search" id="filter" placeholder="요소 검색 (예: table)">
+    <ol>
+      <li><a href="#structure">문서 구조</a></li>
+      <li><a href="#sections">영역 나누기</a></li>
+      <li><a href="#blocks">글 덩어리</a></li>
+      <li><a href="#inline">글자 꾸미기</a></li>
+      <li><a href="#media">이미지·미디어</a></li>
+      <li><a href="#embed">다른 콘텐츠 넣기</a></li>
+      <li><a href="#table">표</a></li>
+      <li><a href="#form">입력 폼</a></li>
+      <li><a href="#interactive">펼치기·창</a></li>
+    </ol>
+  </aside>
+
+  <main>
+
+<!-- ============ 1. 문서 구조 ============ -->
+<div class="cat" id="structure">
+  <h2>문서 구조</h2>
+  <p>모든 HTML 파일의 뼈대예요. 대부분 화면에는 안 보이고 브라우저에게 정보를 줘요.</p>
+
+  <section class="el" data-tag="html" data-name="문서 전체" data-code-only>
+    <p class="desc">HTML 문서 전체를 감싸는 가장 바깥 요소예요. lang 속성으로 문서 언어를 알려줘요.</p>
+<script type="text/html">
+<!DOCTYPE html>
+<html lang="ko">
+  <head>...</head>
+  <body>...</body>
+</html>
+</script>
+  </section>
+
+  <section class="el" data-tag="head" data-name="문서 정보 영역" data-code-only>
+    <p class="desc">화면에 안 보이는 정보(제목, 인코딩, CSS 연결 등)를 모아두는 곳이에요.</p>
+<script type="text/html">
+<head>
+  <meta charset="UTF-8">
+  <title>내 페이지</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+</script>
+  </section>
+
+  <section class="el" data-tag="body" data-name="본문 영역" data-code-only>
+    <p class="desc">화면에 보이는 모든 내용이 들어가는 곳이에요. 이 페이지에서 보이는 것도 전부 body 안에 있어요.</p>
+<script type="text/html">
+<body>
+  <h1>안녕하세요</h1>
+  <p>여기 쓴 내용이 화면에 보여요.</p>
+</body>
+</script>
+  </section>
+
+  <section class="el" data-tag="title" data-name="탭 제목" data-code-only>
+    <p class="desc">브라우저 탭과 즐겨찾기, 검색 결과에 표시되는 제목이에요. 이 페이지 탭에 보이는 "HTML 요소 도감"이 title이에요.</p>
+<script type="text/html">
+<title>HTML 요소 도감</title>
+</script>
+  </section>
+
+  <section class="el" data-tag="meta" data-name="부가 정보" data-code-only>
+    <p class="desc">문자 인코딩, 모바일 화면 크기, 페이지 설명 같은 정보를 적어요. 닫는 태그가 없어요.</p>
+<script type="text/html">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="HTML 공부 기록">
+</script>
+  </section>
+
+  <section class="el" data-tag="link" data-name="외부 파일 연결" data-code-only>
+    <p class="desc">외부 CSS 파일이나 파비콘(탭 아이콘)을 연결해요. 하이퍼링크인 &lt;a&gt;와는 달라요.</p>
+<script type="text/html">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="favicon.png">
+</script>
+  </section>
+
+  <section class="el" data-tag="style" data-name="CSS 직접 쓰기" data-code-only>
+    <p class="desc">HTML 파일 안에 CSS를 바로 작성할 때 써요. 이 페이지의 디자인도 head 안 style에 들어 있어요.</p>
+<script type="text/html">
+<style>
+  p { color: blue; }
+</style>
+</script>
+  </section>
+
+  <section class="el" data-tag="script" data-name="자바스크립트" data-code-only>
+    <p class="desc">자바스크립트 코드를 쓰거나 외부 .js 파일을 연결해요. 버튼 클릭 같은 동작을 만들 때 필요해요.</p>
+<script type="text/html">
+<script src="app.js"><\/script>
+<script>
+  alert("안녕하세요");
+<\/script>
+</script>
+  </section>
+
+  <section class="el" data-tag="noscript" data-name="JS 꺼졌을 때 내용" data-code-only>
+    <p class="desc">브라우저에서 자바스크립트가 꺼져 있을 때만 보여주는 내용이에요.</p>
+<script type="text/html">
+<noscript>자바스크립트를 켜야 이 페이지가 제대로 동작해요.</noscript>
+</script>
+  </section>
+
+  <section class="el" data-tag="base" data-name="기준 주소" data-code-only>
+    <p class="desc">상대 경로 링크의 기준이 되는 주소를 정해요. 실제로는 거의 안 써요.</p>
+<script type="text/html">
+<base href="https://example.com/">
+</script>
+  </section>
+
+  <section class="el" data-tag="template · slot" data-name="복제용 틀" data-code-only>
+    <p class="desc">template 안의 내용은 화면에 안 나오고, 자바스크립트로 복사해서 쓰는 틀이에요. slot은 웹 컴포넌트에서 내용을 끼워 넣는 자리예요. 나중에 JS 배울 때 다시 보면 돼요.</p>
+<script type="text/html">
+<template id="card">
+  <div class="card"><slot name="title"></slot></div>
+</template>
+</script>
+  </section>
+</div>
+
+<!-- ============ 2. 영역 나누기 ============ -->
+<div class="cat" id="sections">
+  <h2>영역 나누기</h2>
+  <p>보기에는 div와 똑같지만, 이름만으로 "여기가 무슨 영역인지" 알려주는 요소들이에요. 결과 칸의 주황 점선이 각 영역이에요.</p>
+
+  <section class="el" data-tag="h1 ~ h6" data-name="제목">
+    <p class="desc">제목이에요. 숫자가 작을수록 큰 제목이고, 보통 한 페이지에 h1은 하나만 써요.</p>
+<script type="text/html">
+<h1>h1 제목</h1>
+<h2>h2 제목</h2>
+<h3>h3 제목</h3>
+<h4>h4 제목</h4>
+<h5>h5 제목</h5>
+<h6>h6 제목</h6>
+</script>
+  </section>
+
+  <section class="el" data-tag="header · nav · main · footer" data-name="페이지 기본 틀" data-box>
+    <p class="desc">header는 머리말(로고, 제목), nav는 메뉴, main은 핵심 내용, footer는 꼬리말(저작권, 연락처)이에요.</p>
+<script type="text/html">
+<header>사이트 이름</header>
+<nav>
+  <a href="#">홈</a> | <a href="#">소개</a>
+</nav>
+<main>이 페이지의 핵심 내용</main>
+<footer>© 2026 나의 사이트</footer>
+</script>
+  </section>
+
+  <section class="el" data-tag="section" data-name="주제별 구역" data-box>
+    <p class="desc">비슷한 주제끼리 묶은 구역이에요. 보통 안에 제목(h2 등)을 넣어요.</p>
+<script type="text/html">
+<section>
+  <h3>공지사항</h3>
+  <p>이번 주 공지 내용</p>
+</section>
+<section>
+  <h3>자유게시판</h3>
+  <p>게시글 목록</p>
+</section>
+</script>
+  </section>
+
+  <section class="el" data-tag="article" data-name="독립된 글" data-box>
+    <p class="desc">그것만 떼어서 봐도 말이 되는 글이에요. 블로그 글, 뉴스 기사, 댓글 하나 등에 써요.</p>
+<script type="text/html">
+<article>
+  <h3>싸지방에서 HTML 공부하기</h3>
+  <p>오늘은 GitHub Pages를 설정했다.</p>
+</article>
+</script>
+  </section>
+
+  <section class="el" data-tag="aside" data-name="곁가지 내용" data-box>
+    <p class="desc">본문과 관련은 있지만 빠져도 되는 내용이에요. 사이드바, 광고, 참고 박스 등에 써요.</p>
+<script type="text/html">
+<p>본문 내용이에요.</p>
+<aside>참고: 이 내용은 3장에서 더 자세히 다뤄요.</aside>
+</script>
+  </section>
+
+  <section class="el" data-tag="div" data-name="의미 없는 상자" data-box>
+    <p class="desc">아무 의미 없이 묶기만 하는 상자예요. 위의 요소들 중 맞는 게 없을 때 쓰고, 주로 CSS로 꾸미기 위해 묶어요.</p>
+<script type="text/html">
+<div>
+  <p>그냥 묶어둔 문단 1</p>
+  <p>그냥 묶어둔 문단 2</p>
+</div>
+</script>
+  </section>
+
+  <section class="el" data-tag="address" data-name="연락처" data-box>
+    <p class="desc">글쓴이나 사이트 운영자의 연락처예요. 기본적으로 기울임꼴로 보여요.</p>
+<script type="text/html">
+<address>
+  작성자: 홍길동<br>
+  이메일: <a href="mailto:hong@example.com">hong@example.com</a>
+</address>
+</script>
+  </section>
+
+  <section class="el" data-tag="hgroup" data-name="제목 묶음" data-box>
+    <p class="desc">제목과 부제목을 하나로 묶어요.</p>
+<script type="text/html">
+<hgroup>
+  <h3>HTML 요소 도감</h3>
+  <p>모든 요소를 한 페이지에서</p>
+</hgroup>
+</script>
+  </section>
+
+  <section class="el" data-tag="search" data-name="검색 영역" data-box>
+    <p class="desc">검색창을 감싸는 영역이라고 알려주는 요소예요. 비교적 최근에 생겼어요.</p>
+<script type="text/html">
+<search>
+  <input type="search" placeholder="검색어 입력">
+  <button>검색</button>
+</search>
+</script>
+  </section>
+</div>
+
+<!-- ============ 3. 글 덩어리 ============ -->
+<div class="cat" id="blocks">
+  <h2>글 덩어리</h2>
+  <p>문단, 목록, 인용처럼 한 줄을 통째로 차지하는(블록) 요소들이에요.</p>
+
+  <section class="el" data-tag="p" data-name="문단">
+    <p class="desc">문단이에요. 문단끼리는 자동으로 위아래 간격이 생겨요. 코드에서 엔터를 쳐도 화면에서는 한 줄로 이어져요.</p>
+<script type="text/html">
+<p>첫 번째 문단이에요.
+코드에서 줄을 바꿔도 이어서 보여요.</p>
+<p>두 번째 문단이에요.</p>
+</script>
+  </section>
+
+  <section class="el" data-tag="br · hr" data-name="줄바꿈 · 구분선">
+    <p class="desc">br은 문단 안에서 줄만 바꿔요. hr은 주제가 바뀌는 곳에 가로선을 그어요. 둘 다 닫는 태그가 없어요.</p>
+<script type="text/html">
+<p>첫째 줄<br>둘째 줄</p>
+<hr>
+<p>다른 주제의 문단</p>
+</script>
+  </section>
+
+  <section class="el" data-tag="ul · ol · li" data-name="목록">
+    <p class="desc">ul은 순서 없는 목록(점), ol은 순서 있는 목록(숫자)이에요. 항목 하나하나는 li로 써요.</p>
+<script type="text/html">
+<ul>
+  <li>HTML</li>
+  <li>CSS</li>
+</ul>
+<ol>
+  <li>책 읽기</li>
+  <li>따라 치기</li>
+  <li>커밋하기</li>
+</ol>
+</script>
+  </section>
+
+  <section class="el" data-tag="dl · dt · dd" data-name="용어 설명 목록">
+    <p class="desc">dt에 용어, dd에 그 설명을 쓰는 목록이에요. 사전이나 FAQ 같은 곳에 어울려요.</p>
+<script type="text/html">
+<dl>
+  <dt>HTML</dt>
+  <dd>웹페이지의 구조를 만드는 언어</dd>
+  <dt>CSS</dt>
+  <dd>웹페이지를 꾸미는 언어</dd>
+</dl>
+</script>
+  </section>
+
+  <section class="el" data-tag="menu" data-name="명령 목록" data-box>
+    <p class="desc">ul과 똑같이 보이지만 버튼 같은 '명령' 목록이라는 의미예요.</p>
+<script type="text/html">
+<menu>
+  <li><button>복사</button></li>
+  <li><button>붙여넣기</button></li>
+</menu>
+</script>
+  </section>
+
+  <section class="el" data-tag="blockquote" data-name="긴 인용">
+    <p class="desc">다른 곳에서 가져온 긴 글을 인용할 때 써요. 기본으로 들여쓰기가 돼요.</p>
+<script type="text/html">
+<blockquote>
+  <p>배움에는 끝이 없다.</p>
+</blockquote>
+</script>
+  </section>
+
+  <section class="el" data-tag="pre" data-name="모양 그대로">
+    <p class="desc">공백과 줄바꿈을 쓴 그대로 보여줘요. 코드나 아스키 아트에 써요.</p>
+<script type="text/html">
+<pre>
+  띄어쓰기도      그대로
+    줄바꿈도
+      그대로
+</pre>
+</script>
+  </section>
+
+  <section class="el" data-tag="figure · figcaption" data-name="그림과 설명" data-box>
+    <p class="desc">이미지, 표, 코드 같은 자료와 그 설명(캡션)을 한 덩어리로 묶어요.</p>
+<script type="text/html">
+<figure>
+  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='90'%3E%3Crect width='100%25' height='100%25' fill='%232f5bea'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-size='20' fill='white'%3E그림%3C/text%3E%3C/svg%3E" alt="파란 사각형">
+  <figcaption>그림 1. 파란 사각형</figcaption>
+</figure>
+</script>
+  </section>
+</div>
+
+<!-- ============ 4. 글자 꾸미기 ============ -->
+<div class="cat" id="inline">
+  <h2>글자 꾸미기</h2>
+  <p>문장 중간에 들어가는(인라인) 요소들이에요. 생김새가 비슷한 것끼리 묶어서 비교해 보세요.</p>
+
+  <section class="el" data-tag="a" data-name="링크">
+    <p class="desc">다른 페이지나 같은 페이지의 특정 위치로 이동하는 링크예요. href에 주소를 써요. target="_blank"는 새 탭으로 열어요.</p>
+<script type="text/html">
+<a href="https://github.com">GitHub로 가기</a><br>
+<a href="https://github.com" target="_blank">새 탭으로 열기</a><br>
+<a href="#table">이 페이지의 표 부분으로</a>
+</script>
+  </section>
+
+  <section class="el" data-tag="strong vs b" data-name="굵게">
+    <p class="desc">둘 다 굵게 보여요. strong은 "중요하다"는 의미가 있고, b는 의미 없이 눈에 띄게만 해요. 보통 strong을 써요.</p>
+<script type="text/html">
+<p><strong>경고:</strong> 커밋 안 하면 사라져요.</p>
+<p>상품명 <b>HTML 입문</b>은 품절이에요.</p>
+</script>
+  </section>
+
+  <section class="el" data-tag="em vs i" data-name="기울임">
+    <p class="desc">둘 다 기울어져요. em은 말할 때 힘주는 강조, i는 외국어나 생각처럼 평소와 다른 목소리를 나타내요.</p>
+<script type="text/html">
+<p>나는 <em>오늘</em> 끝낼 거야.</p>
+<p>이건 <i>déjà vu</i> 같아.</p>
+</script>
+  </section>
+
+  <section class="el" data-tag="u · s" data-name="밑줄 · 취소선">
+    <p class="desc">u는 밑줄(맞춤법 오류 표시 등), s는 더 이상 맞지 않는 내용에 긋는 취소선이에요.</p>
+<script type="text/html">
+<p>이 단어는 <u>맞춤뻡</u>이 틀렸어요.</p>
+<p>가격: <s>20,000원</s> 15,000원</p>
+</script>
+  </section>
+
+  <section class="el" data-tag="ins · del" data-name="추가 · 삭제 기록">
+    <p class="desc">문서가 수정된 기록을 남겨요. del은 지운 내용, ins는 새로 넣은 내용이에요. s와 달리 '수정 이력'이라는 의미예요.</p>
+<script type="text/html">
+<p>모임 장소: <del>강의실 A</del> <ins>강의실 B</ins></p>
+</script>
+  </section>
+
+  <section class="el" data-tag="mark" data-name="형광펜">
+    <p class="desc">형광펜으로 칠한 것처럼 표시해요. 검색어 강조 등에 써요.</p>
+<script type="text/html">
+<p>시험 범위는 <mark>3장부터 5장까지</mark>예요.</p>
+</script>
+  </section>
+
+  <section class="el" data-tag="small" data-name="작은 글씨">
+    <p class="desc">주석, 저작권 표시처럼 덜 중요한 작은 글씨예요.</p>
+<script type="text/html">
+<p>회원가입 <small>(약관에 동의한 것으로 간주돼요)</small></p>
+</script>
+  </section>
+
+  <section class="el" data-tag="sub · sup" data-name="아래 첨자 · 위 첨자">
+    <p class="desc">sub는 아래로 작게(화학식), sup는 위로 작게(제곱, 각주) 써요.</p>
+<script type="text/html">
+<p>물은 H<sub>2</sub>O예요.</p>
+<p>2<sup>10</sup> = 1024</p>
+</script>
+  </section>
+
+  <section class="el" data-tag="code · kbd · samp · var" data-name="컴퓨터 관련 글자">
+    <p class="desc">code는 코드 조각, kbd는 키보드 입력, samp는 프로그램 출력 결과, var는 변수 이름이에요. 대부분 고정폭 글꼴로 보여요.</p>
+<script type="text/html">
+<p><code>console.log()</code>로 출력해요.</p>
+<p><kbd>Ctrl</kbd> + <kbd>S</kbd>를 누르세요.</p>
+<p>결과: <samp>Hello, World!</samp></p>
+<p>넓이 = <var>가로</var> × <var>세로</var></p>
+</script>
+  </section>
+
+  <section class="el" data-tag="abbr · dfn" data-name="약어 · 용어 정의">
+    <p class="desc">abbr는 줄임말이에요. 마우스를 올리면 title의 전체 이름이 떠요. dfn은 그 문장에서 처음 정의하는 용어를 표시해요.</p>
+<script type="text/html">
+<p><abbr title="HyperText Markup Language">HTML</abbr>에 마우스를 올려보세요.</p>
+<p><dfn>커밋</dfn>은 변경 내용을 저장소에 기록하는 거예요.</p>
+</script>
+  </section>
+
+  <section class="el" data-tag="q · cite" data-name="짧은 인용 · 출처">
+    <p class="desc">q는 문장 속 짧은 인용이라 따옴표가 자동으로 붙어요. cite는 책, 영화 같은 작품 제목이에요.</p>
+<script type="text/html">
+<p>선임이 <q>싸지방은 9시에 닫는다</q>고 했다.</p>
+<p><cite>Do it! HTML+CSS</cite>로 공부 중이에요.</p>
+</script>
+  </section>
+
+  <section class="el" data-tag="time · data" data-name="날짜 · 기계용 값">
+    <p class="desc">보이는 글자와 별개로 컴퓨터가 읽을 수 있는 값을 숨겨둬요. time은 날짜·시간, data는 그 밖의 값이에요.</p>
+<script type="text/html">
+<p>전역일: <time datetime="2027-12-01">내후년 12월 1일</time></p>
+<p>상품: <data value="A-1024">HTML 입문서</data></p>
+</script>
+  </section>
+
+  <section class="el" data-tag="span" data-name="의미 없는 글자 묶음" data-box>
+    <p class="desc">div의 인라인 버전이에요. 문장 일부만 CSS로 꾸미고 싶을 때 묶어요.</p>
+<script type="text/html">
+<p>이 문장에서 <span style="color: tomato;">이 부분만</span> 빨개요.</p>
+</script>
+  </section>
+
+  <section class="el" data-tag="wbr" data-name="줄바꿈 허용 위치">
+    <p class="desc">아주 긴 단어에서 "칸이 모자라면 여기서 줄을 바꿔도 돼"라고 알려줘요. 결과 칸 폭을 줄여보면 차이가 보여요.</p>
+<script type="text/html">
+<p style="width: 140px;">Super<wbr>califragilistic<wbr>expialidocious</p>
+<p style="width: 140px;">Supercalifragilisticexpialidocious</p>
+</script>
+  </section>
+
+  <section class="el" data-tag="bdo · bdi" data-name="글자 방향">
+    <p class="desc">bdo는 글자 방향을 강제로 바꿔요. bdi는 아랍어처럼 오른쪽→왼쪽으로 쓰는 글이 섞여도 주변이 안 깨지게 분리해요.</p>
+<script type="text/html">
+<p><bdo dir="rtl">거꾸로 써져요</bdo></p>
+<p>사용자 <bdi>إيان</bdi>: 3개</p>
+</script>
+  </section>
+
+  <section class="el" data-tag="ruby · rt · rp" data-name="윗주(발음 표시)">
+    <p class="desc">한자나 일본어 위에 읽는 법을 작게 달아요. rp는 ruby를 지원 안 하는 브라우저에서만 보이는 괄호예요.</p>
+<script type="text/html">
+<ruby>漢字<rp>(</rp><rt>한자</rt><rp>)</rp></ruby>
+<ruby>東京<rp>(</rp><rt>とうきょう</rt><rp>)</rp></ruby>
+</script>
+  </section>
+</div>
+
+<!-- ============ 5. 이미지·미디어 ============ -->
+<div class="cat" id="media">
+  <h2>이미지·미디어</h2>
+  <p>그림, 소리, 영상을 넣는 요소들이에요. 예제는 파일 없이 동작하도록 코드로 만든 그림을 썼어요. 실제로는 src에 "images/cat.jpg" 같은 파일 경로를 써요.</p>
+
+  <section class="el" data-tag="img" data-name="이미지">
+    <p class="desc">이미지를 넣어요. src는 파일 주소, alt는 이미지가 안 뜰 때나 화면 낭독기가 읽어주는 설명이에요. 닫는 태그가 없어요.</p>
+<script type="text/html">
+<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='90'%3E%3Crect width='100%25' height='100%25' fill='%23e8a33d'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-size='20' fill='white'%3Eimg%3C/text%3E%3C/svg%3E" alt="주황 사각형" width="160">
+<img src="없는파일.jpg" alt="파일이 없으면 이 글자가 보여요">
+</script>
+  </section>
+
+  <section class="el" data-tag="picture · source" data-name="상황별 이미지">
+    <p class="desc">화면 크기 등 조건에 따라 다른 이미지를 보여줘요. 결과 칸이 있는 창 너비를 600px보다 줄이면 색이 바뀌어요.</p>
+<script type="text/html">
+<picture>
+  <source media="(max-width: 600px)" srcset="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='90'%3E%3Crect width='100%25' height='100%25' fill='%2322a06b'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-size='18' fill='white'%3E좁은 화면%3C/text%3E%3C/svg%3E">
+  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='90'%3E%3Crect width='100%25' height='100%25' fill='%232f5bea'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-size='18' fill='white'%3E넓은 화면%3C/text%3E%3C/svg%3E" alt="화면 크기에 따라 바뀌는 그림">
+</picture>
+</script>
+  </section>
+
+  <section class="el" data-tag="map · area" data-name="이미지 클릭 영역">
+    <p class="desc">이미지 위에 클릭할 수 있는 구역을 정해요. 그림 왼쪽 절반을 클릭하면 링크로 이동해요.</p>
+<script type="text/html">
+<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='80'%3E%3Crect width='100' height='80' fill='%232f5bea'/%3E%3Crect x='100' width='100' height='80' fill='%2398a4b3'/%3E%3Ctext x='50' y='45' text-anchor='middle' font-size='14' fill='white'%3E클릭%3C/text%3E%3C/svg%3E" usemap="#demo-map" alt="왼쪽 절반이 링크인 그림">
+<map name="demo-map">
+  <area shape="rect" coords="0,0,100,80" href="https://github.com" target="_blank" alt="GitHub">
+</map>
+</script>
+  </section>
+
+  <section class="el" data-tag="audio" data-name="소리">
+    <p class="desc">음악이나 소리를 재생해요. controls를 쓰면 재생 버튼이 보여요. 예제는 파일이 없어서 재생은 안 돼요.</p>
+<script type="text/html">
+<audio controls src="music.mp3">
+  이 브라우저는 audio를 지원하지 않아요.
+</audio>
+</script>
+  </section>
+
+  <section class="el" data-tag="video · track" data-name="영상 · 자막">
+    <p class="desc">영상을 재생해요. track으로 자막 파일(.vtt)을 연결해요. 예제는 파일이 없어서 빈 화면이에요.</p>
+<script type="text/html">
+<video controls width="280" src="movie.mp4">
+  <track kind="subtitles" src="subtitle-ko.vtt" srclang="ko" label="한국어">
+</video>
+</script>
+  </section>
+
+  <section class="el" data-tag="canvas" data-name="그림판">
+    <p class="desc">자바스크립트로 그림을 그리는 빈 도화지예요. 게임이나 그래프에 써요. 아래 원은 이 페이지 맨 아래의 JS가 그린 거예요.</p>
+<script type="text/html">
+<canvas id="demo-canvas" width="200" height="90">
+  canvas를 지원하지 않는 브라우저예요.
+</canvas>
+</script>
+  </section>
+
+  <section class="el" data-tag="svg" data-name="벡터 그림">
+    <p class="desc">코드로 도형을 그려요. 확대해도 깨지지 않아서 아이콘에 많이 써요.</p>
+<script type="text/html">
+<svg width="200" height="90" viewBox="0 0 200 90">
+  <circle cx="45" cy="45" r="35" fill="#2f5bea" />
+  <rect x="95" y="15" width="90" height="60" rx="8" fill="#e8a33d" />
+</svg>
+</script>
+  </section>
+
+  <section class="el" data-tag="math" data-name="수식">
+    <p class="desc">수학 수식을 표현해요 (MathML). 분수, 제곱 등을 제대로 된 수식 모양으로 보여줘요.</p>
+<script type="text/html">
+<math>
+  <mi>x</mi><mo>=</mo>
+  <mfrac>
+    <mrow><mo>-</mo><mi>b</mi></mrow>
+    <mrow><mn>2</mn><mi>a</mi></mrow>
+  </mfrac>
+</math>
+</script>
+  </section>
+</div>
+
+<!-- ============ 6. 다른 콘텐츠 넣기 ============ -->
+<div class="cat" id="embed">
+  <h2>다른 콘텐츠 넣기</h2>
+  <p>페이지 안에 다른 페이지나 파일을 끼워 넣는 요소들이에요.</p>
+
+  <section class="el" data-tag="iframe" data-name="페이지 속 페이지">
+    <p class="desc">다른 웹페이지를 창처럼 끼워 넣어요. 유튜브 영상이나 지도를 넣을 때 써요. 예제는 srcdoc으로 내용을 직접 넣었어요.</p>
+<script type="text/html">
+<iframe width="280" height="90" srcdoc="<p style='font-family:sans-serif'>저는 iframe 안의 별도 페이지예요.</p>"></iframe>
+</script>
+  </section>
+
+  <section class="el" data-tag="embed · object" data-name="외부 파일 끼워넣기">
+    <p class="desc">PDF나 그림 같은 외부 파일을 넣어요. object는 파일이 안 열릴 때 보여줄 대체 내용을 넣을 수 있어요. 요즘은 img, iframe을 더 많이 써요.</p>
+<script type="text/html">
+<embed type="image/svg+xml" width="120" height="60" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Crect width='100%25' height='100%25' fill='%2322a06b'/%3E%3Ctext x='50%25' y='60%25' text-anchor='middle' font-size='16' fill='white'%3Eembed%3C/text%3E%3C/svg%3E">
+<object type="application/pdf" data="없는파일.pdf" width="160" height="60">
+  PDF를 열 수 없어서 대신 이 글이 보여요.
+</object>
+</script>
+  </section>
+</div>
+
+<!-- ============ 7. 표 ============ -->
+<div class="cat" id="table">
+  <h2>표</h2>
+  <p>표는 여러 요소가 한 세트로 움직여서 하나의 예제로 모았어요. 테두리는 결과 칸에서만 CSS로 넣었어요(기본은 테두리 없음).</p>
+
+  <section class="el" data-tag="table · caption · thead · tbody · tfoot · tr · th · td" data-name="표 한 세트">
+    <p class="desc">table: 표 전체 / caption: 표 제목 / thead·tbody·tfoot: 머리·몸통·꼬리 줄 묶음 / tr: 한 줄 / th: 제목 칸(굵게, 가운데) / td: 일반 칸. colspan은 칸을 가로로, rowspan은 세로로 합쳐요.</p>
+<script type="text/html">
+<table>
+  <caption>주간 공부 기록</caption>
+  <thead>
+    <tr>
+      <th>요일</th>
+      <th>공부 내용</th>
+      <th>시간</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>월</td>
+      <td>HTML 기본 구조</td>
+      <td>1시간</td>
+    </tr>
+    <tr>
+      <td>화</td>
+      <td rowspan="2">목록과 표</td>
+      <td>2시간</td>
+    </tr>
+    <tr>
+      <td>수</td>
+      <td>1시간</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="2">합계</td>
+      <td>4시간</td>
+    </tr>
+  </tfoot>
+</table>
+</script>
+  </section>
+
+  <section class="el" data-tag="colgroup · col" data-name="세로줄 꾸미기">
+    <p class="desc">td를 하나하나 꾸미지 않고 세로줄(열) 단위로 한 번에 스타일을 줘요.</p>
+<script type="text/html">
+<table>
+  <colgroup>
+    <col style="background: #fde8c4;">
+    <col span="2" style="background: #dbe4ff;">
+  </colgroup>
+  <tr><th>이름</th><th>국어</th><th>수학</th></tr>
+  <tr><td>A</td><td>90</td><td>85</td></tr>
+</table>
+</script>
+  </section>
+</div>
+
+<!-- ============ 8. 입력 폼 ============ -->
+<div class="cat" id="form">
+  <h2>입력 폼</h2>
+  <p>사용자에게 값을 입력받는 요소들이에요. 결과 칸에서 직접 눌러보고 입력해 보세요.</p>
+
+  <section class="el" data-tag="form · label · input · button" data-name="기본 입력 폼">
+    <p class="desc">form은 입력 요소 전체를 감싸요. label은 입력칸의 이름표(누르면 입력칸이 선택돼요), input은 입력칸, button은 버튼이에요.</p>
+<script type="text/html">
+<form onsubmit="alert('제출됨!'); return false;">
+  <label for="nick">닉네임</label>
+  <input id="nick" type="text" placeholder="입력하세요" required>
+  <button type="submit">제출</button>
+  <button type="reset">지우기</button>
+</form>
+</script>
+  </section>
+
+  <section class="el" data-tag="input type=..." data-name="input의 여러 종류">
+    <p class="desc">input은 type만 바꾸면 완전히 다른 입력칸이 돼요. 하나씩 눌러보며 비교해 보세요.</p>
+<script type="text/html">
+<p>text <input type="text" value="글자"></p>
+<p>password <input type="password" value="secret"></p>
+<p>email <input type="email" placeholder="a@b.com"></p>
+<p>number <input type="number" value="3" min="0" max="10"></p>
+<p>tel <input type="tel" placeholder="010-0000-0000"></p>
+<p>url <input type="url" placeholder="https://"></p>
+<p>search <input type="search" placeholder="검색"></p>
+<p>date <input type="date"></p>
+<p>time <input type="time"></p>
+<p>datetime-local <input type="datetime-local"></p>
+<p>month <input type="month"></p>
+<p>week <input type="week"></p>
+<p>color <input type="color" value="#2f5bea"></p>
+<p>range <input type="range" min="0" max="100"></p>
+<p>file <input type="file"></p>
+<p>checkbox
+  <label><input type="checkbox" checked> HTML</label>
+  <label><input type="checkbox"> CSS</label>
+</p>
+<p>radio
+  <label><input type="radio" name="g" checked> 남</label>
+  <label><input type="radio" name="g"> 여</label>
+</p>
+<p>button <input type="button" value="input 버튼"></p>
+<p>hidden <input type="hidden" value="안 보임"> (화면에 안 보여요)</p>
+</script>
+  </section>
+
+  <section class="el" data-tag="textarea" data-name="여러 줄 입력">
+    <p class="desc">여러 줄을 입력하는 칸이에요. rows와 cols로 크기를 정해요.</p>
+<script type="text/html">
+<textarea rows="3" cols="30" placeholder="자유롭게 써보세요"></textarea>
+</script>
+  </section>
+
+  <section class="el" data-tag="select · option · optgroup" data-name="드롭다운">
+    <p class="desc">select는 펼쳐서 고르는 목록, option은 선택지, optgroup은 선택지 묶음이에요.</p>
+<script type="text/html">
+<select>
+  <optgroup label="프론트엔드">
+    <option>HTML</option>
+    <option selected>CSS</option>
+  </optgroup>
+  <optgroup label="백엔드">
+    <option>Java</option>
+    <option>Python</option>
+  </optgroup>
+</select>
+</script>
+  </section>
+
+  <section class="el" data-tag="datalist" data-name="추천 검색어">
+    <p class="desc">입력칸에 글자를 치면 추천 목록이 떠요. 목록에 없는 값도 자유롭게 입력할 수 있다는 점이 select와 달라요.</p>
+<script type="text/html">
+<input list="langs" placeholder="언어 입력">
+<datalist id="langs">
+  <option value="HTML">
+  <option value="CSS">
+  <option value="JavaScript">
+</datalist>
+</script>
+  </section>
+
+  <section class="el" data-tag="fieldset · legend" data-name="입력칸 묶음">
+    <p class="desc">관련 있는 입력칸들을 테두리로 묶고, legend로 그 묶음에 제목을 붙여요.</p>
+<script type="text/html">
+<fieldset>
+  <legend>배송 정보</legend>
+  <label>이름 <input type="text"></label><br>
+  <label>주소 <input type="text"></label>
+</fieldset>
+</script>
+  </section>
+
+  <section class="el" data-tag="output" data-name="계산 결과">
+    <p class="desc">계산된 결과를 보여주는 칸이에요. 숫자를 바꿔보세요.</p>
+<script type="text/html">
+<form oninput="sum.value = Number(a.value) + Number(b.value)">
+  <input name="a" type="number" value="2" style="width: 60px;"> +
+  <input name="b" type="number" value="3" style="width: 60px;"> =
+  <output name="sum">5</output>
+</form>
+</script>
+  </section>
+
+  <section class="el" data-tag="progress vs meter" data-name="진행 막대 · 측정 막대">
+    <p class="desc">생김새는 비슷해요. progress는 '얼마나 진행됐나'(다운로드 등), meter는 '범위 안의 현재 값'(배터리, 저장 공간)이에요. meter는 값에 따라 색이 바뀌어요.</p>
+<script type="text/html">
+<p>다운로드 <progress value="70" max="100">70%</progress></p>
+<p>진행 중(값 없음) <progress></progress></p>
+<p>배터리 넉넉 <meter value="0.8" low="0.3" high="0.7" optimum="1">80%</meter></p>
+<p>배터리 부족 <meter value="0.2" low="0.3" high="0.7" optimum="1">20%</meter></p>
+</script>
+  </section>
+</div>
+
+<!-- ============ 9. 펼치기·창 ============ -->
+<div class="cat" id="interactive">
+  <h2>펼치기·창</h2>
+  <p>자바스크립트 없이(또는 아주 조금으로) 동작하는 요소들이에요.</p>
+
+  <section class="el" data-tag="details · summary" data-name="접었다 펼치기">
+    <p class="desc">summary를 누르면 나머지 내용이 펼쳐져요. FAQ에 많이 써요. open 속성을 붙이면 처음부터 펼쳐져 있어요.</p>
+<script type="text/html">
+<details>
+  <summary>정답 보기</summary>
+  <p>정답은 index.html이에요.</p>
+</details>
+</script>
+  </section>
+
+  <section class="el" data-tag="dialog" data-name="대화상자(팝업 창)">
+    <p class="desc">팝업 창이에요. 열고 닫을 때는 자바스크립트 한 줄이 필요해요.</p>
+<script type="text/html">
+<button onclick="document.getElementById('demo-dialog').showModal()">창 열기</button>
+<dialog id="demo-dialog">
+  <p>저는 dialog예요.</p>
+  <button onclick="this.closest('dialog').close()">닫기</button>
+</dialog>
+</script>
+  </section>
+</div>
+
+  </main>
+</div>
+
+<script>
+  // 들여쓰기 정리: 예제 코드 앞의 공통 공백을 지워요
+  function dedent(text) {
+    const lines = text.replace(/^\n+|\s+$/g, "").split("\n");
+    const indents = lines.filter(l => l.trim()).map(l => l.match(/^ */)[0].length);
+    const min = Math.min(...indents);
+    return lines.map(l => l.slice(min)).join("\n");
+  }
+
+  const cards = document.querySelectorAll(".el");
+
+  cards.forEach(card => {
+    const src = card.querySelector('script[type="text/html"]');
+    const code = dedent(src.textContent).replace(/<\\\/script>/g, "</script>");
+
+    // 제목 줄
+    const head = document.createElement("div");
+    head.className = "head";
+    const tagName = document.createElement("h3");
+    tagName.className = "tagname";
+    tagName.textContent = card.dataset.tag.split(" ").map(t => /^[a-z1-6]+$/.test(t) && t !== "vs" ? "<" + t + ">" : t).join(" ");
+    const kname = document.createElement("span");
+    kname.className = "kname";
+    kname.textContent = card.dataset.name;
+    head.append(tagName, kname);
+    card.prepend(head);
+
+    // 결과 칸
+    const resultWrap = document.createElement("div");
+    resultWrap.className = "result-wrap";
+    resultWrap.innerHTML = '<p class="panel-title">결과</p>';
+    const result = document.createElement("div");
+    result.className = "result";
+    if (card.hasAttribute("data-code-only")) {
+      result.classList.add("hidden-note");
+      result.textContent = "화면에 보이지 않는 요소예요. 코드만 확인하세요.";
+    } else {
+      result.innerHTML = code;
+      if (card.hasAttribute("data-box")) result.classList.add("boxed");
+    }
+    resultWrap.append(result);
+
+    // 코드 칸
+    const codeWrap = document.createElement("div");
+    codeWrap.innerHTML = '<p class="panel-title">코드</p>';
+    const pre = document.createElement("pre");
+    pre.className = "code";
+    pre.textContent = code;
+    codeWrap.append(pre);
+
+    card.append(resultWrap, codeWrap);
+  });
+
+  document.getElementById("count").textContent = cards.length + "개 항목";
+
+  // canvas 예제 그리기
+  const canvas = document.getElementById("demo-canvas");
+  if (canvas && canvas.getContext) {
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#2f5bea";
+    ctx.beginPath();
+    ctx.arc(45, 45, 35, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#e8a33d";
+    ctx.fillRect(95, 20, 90, 50);
+  }
+
+  // 검색
+  document.getElementById("filter").addEventListener("input", e => {
+    const q = e.target.value.trim().toLowerCase();
+    cards.forEach(card => {
+      const text = (card.dataset.tag + " " + card.dataset.name).toLowerCase();
+      card.classList.toggle("hide", q && !text.includes(q));
+    });
+  });
+</script>
+</body>
+</html>
