@@ -1,14 +1,211 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML/CSS 공부 기록</title>
+  <style>
+    body {
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+      line-height: 1.7;
+      color: #1b2430;
+      background: #f7f9fb;
+    }
+    h1 { margin-bottom: 4px; }
+    .sub { color: #5b6878; margin-top: 0; }
+    .folder {
+      background: #fff;
+      border: 1px solid #d3dbe4;
+      border-radius: 10px;
+      padding: 12px 20px;
+      margin: 14px 0;
+    }
+    .folder h2 { font-size: 1.1rem; margin: 6px 0; }
+    .folder ul { margin: 0; padding-left: 20px; }
+    .path { color: #98a4b3; font-size: 0.85rem; margin-left: 6px; }
+    #status { color: #5b6878; }
+    .error { color: #c0392b; }
+    button {
+      font: inherit;
+      padding: 6px 14px;
+      border: 1px solid #2f5bea;
+      border-radius: 6px;
+      background: #fff;
+      color: #2f5bea;
+      cursor: pointer;
+    }
+    .todo {
+      background: #fff8e6;
+      border: 2px dashed #e8a33d;
+      border-radius: 10px;
+      padding: 12px 20px;
+      margin-top: 40px;
+    }
+    .todo summary { font-weight: bold; cursor: pointer; }
+  </style>
 </head>
 <body>
-    <h1>HTML/CSS 공부 목차</h1>
-    <ul>
-        <li><a href="test.html">처음 배우는 html</a></li>
-    </ul>
+
+  <h1>HTML/CSS 공부 기록</h1>
+  <p class="sub">저장소에 HTML 파일을 커밋하면 이 목록에 자동으로 추가돼요.</p>
+
+  <p>
+    <button id="reload">목록 새로 불러오기</button>
+    <span id="status">불러오는 중...</span>
+  </p>
+
+  <!-- 자바스크립트가 이 안에 폴더별 목록을 채워 넣어요 -->
+  <div id="list"></div>
+
+  <!-- ===== 나중에 할 일: 방법 2로 넘어가기 ===== -->
+  <section class="todo">
+    <details>
+      <summary>📌 다음 단계: GitHub Actions(방법 2)로 넘어가기</summary>
+
+      <h3>왜 넘어가야 하나요?</h3>
+      <ul>
+        <li>지금 방식(방법 1)은 페이지를 열 때마다 GitHub API에 파일 목록을 물어봐요. 같은 인터넷 주소에서 시간당 60번까지만 응답해서, 싸지방처럼 여러 명이 같은 주소를 쓰면 목록이 안 뜰 수 있어요.</li>
+        <li>방법 2는 커밋할 때 GitHub 서버가 목록이 담긴 index.html을 미리 만들어 둬요. 횟수 제한이 없고 더 빨라요.</li>
+        <li>자동 빌드·배포(CI/CD)는 실무와 다른 프로젝트에서도 계속 쓰는 개념이에요.</li>
+      </ul>
+
+      <h3>할 일 체크리스트</h3>
+      <ol>
+        <li>자바스크립트 기초(변수, 함수, 배열, fetch) 공부하기</li>
+        <li>GitHub Actions와 YAML 문법 기초 알아보기</li>
+        <li><code>.github/workflows/</code> 폴더에 목록 생성용 workflow 파일 만들기</li>
+        <li>Settings → Pages에서 Source를 "GitHub Actions"로 바꾸기</li>
+        <li>이 index.html의 자바스크립트 부분을 지우고, 이 체크리스트도 완료 표시하기</li>
+      </ol>
+    </details>
+  </section>
+
+  <script>
+    // ===== 설정: 내 저장소 정보 =====
+    const OWNER = "jaewon41-art";
+    const REPO = "html-css-study";
+    const BRANCH = "main";
+    const API_URL = `https://api.github.com/repos/${OWNER}/${REPO}/git/trees/${BRANCH}?recursive=1`;
+
+    // API 횟수 제한 때문에, 받아온 목록을 5분 동안 브라우저에 보관해요
+    const CACHE_KEY = "html-file-list";
+    const CACHE_MINUTES = 5;
+
+    const statusEl = document.getElementById("status");
+    const listEl = document.getElementById("list");
+
+    // 1단계: GitHub API에서 저장소의 HTML 파일 경로 목록 가져오기
+    async function getHtmlPaths(forceReload) {
+      if (!forceReload) {
+        try {
+          const saved = JSON.parse(localStorage.getItem(CACHE_KEY));
+          if (saved && Date.now() - saved.time < CACHE_MINUTES * 60 * 1000) {
+            return saved.paths;
+          }
+        } catch (e) { /* 보관된 게 없으면 그냥 새로 받아요 */ }
+      }
+
+      const response = await fetch(API_URL);
+      if (!response.ok) {
+        throw new Error(response.status === 403 ? "limit" : "fail");
+      }
+      const data = await response.json();
+
+      // data.tree에는 모든 파일과 폴더가 들어 있어요. 그중 .html 파일만 골라요
+      const paths = data.tree
+        .filter(item => item.type === "blob")            // blob = 파일
+        .map(item => item.path)                           // 예: "ch01/div.html"
+        .filter(path => path.endsWith(".html"))
+        .filter(path => path !== "index.html");           // 목차 자신은 빼요
+
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ time: Date.now(), paths }));
+      } catch (e) { /* 저장이 안 돼도 목록은 보여줘요 */ }
+      return paths;
+    }
+
+    // 2단계: 각 파일을 열어서 <title> 안의 글자를 가져오기
+    async function getTitle(path) {
+      const fileName = path.split("/").pop();
+      try {
+        const response = await fetch(encodeURI(path));
+        if (!response.ok) return fileName;
+        const text = await response.text();
+        const match = text.match(/<title>([^<]*)<\/title>/i);
+        return match && match[1].trim() ? match[1].trim() : fileName;
+      } catch (e) {
+        return fileName;
+      }
+    }
+
+    // 3단계: 폴더별로 묶어서 화면에 그리기
+    async function showList(forceReload) {
+      statusEl.textContent = "불러오는 중...";
+      statusEl.className = "";
+      listEl.innerHTML = "";
+
+      let paths;
+      try {
+        paths = await getHtmlPaths(forceReload);
+      } catch (e) {
+        statusEl.className = "error";
+        statusEl.innerHTML = e.message === "limit"
+          ? `GitHub API 사용 횟수를 넘었어요. 잠시 후 다시 시도하거나 <a href="https://github.com/${OWNER}/${REPO}">저장소</a>에서 직접 확인하세요.`
+          : `목록을 불러오지 못했어요. 저장소가 Public인지 확인하세요.`;
+        return;
+      }
+
+      // 폴더 이름으로 묶기. 폴더 없이 맨 위에 있는 파일은 "기타"로 분류해요
+      const groups = {};
+      for (const path of paths) {
+        const folder = path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "기타";
+        if (!groups[folder]) groups[folder] = [];
+        groups[folder].push(path);
+      }
+
+      // 폴더 이름 순으로 정렬하고 "기타"는 맨 뒤로
+      const folders = Object.keys(groups).sort((a, b) => {
+        if (a === "기타") return 1;
+        if (b === "기타") return -1;
+        return a.localeCompare(b, "ko");
+      });
+
+      for (const folder of folders) {
+        const box = document.createElement("div");
+        box.className = "folder";
+
+        const heading = document.createElement("h2");
+        heading.textContent = "📁 " + folder;
+        box.append(heading);
+
+        const ul = document.createElement("ul");
+        const files = groups[folder].sort();
+        const titles = await Promise.all(files.map(getTitle));   // 제목을 한꺼번에 가져와요
+
+        files.forEach((path, i) => {
+          const li = document.createElement("li");
+          const a = document.createElement("a");
+          a.href = encodeURI(path);
+          a.textContent = titles[i];
+          const small = document.createElement("span");
+          small.className = "path";
+          small.textContent = path;
+          li.append(a, small);
+          ul.append(li);
+        });
+
+        box.append(ul);
+        listEl.append(box);
+      }
+
+      statusEl.textContent = `파일 ${paths.length}개`;
+    }
+
+    document.getElementById("reload").addEventListener("click", () => showList(true));
+    showList(false);
+  </script>
 </body>
 </html>
