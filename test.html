@@ -1,40 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>링크 3종류</title>
 </head>
 <body>
+    <h1 id="top">링크 3종류 연습</h1>
+
+    <!-- 1. 페이지 내 링크: href="#아이디" → 같은 페이지의 id 위치로 이동 -->
+    <h2>1. 페이지 내 링크</h2>
     <ul>
-        <li>first</li>
-        <li>second</li>
-        <li>third</li>
-        <ul>
-            <li>first</li>
-            <li>second</li>
-            <li>third</li>
-            <ul>
-                <li>first</li>
-                <li>second</li>
-                <li>third</li>
-            </ul>
-        </ul>
+        <li><a href="#part1">1부로 이동</a></li>
+        <li><a href="#part2">2부로 이동</a></li>
     </ul>
-    <ol>
-        <li>first</li>
-        <li>second</li>
-        <li>third</li>
-        <ul>
-            <li>first</li>
-            <li>second</li>
-            <li>third</li>
-        </ul>
-        <ol>
-            <li>first</li>
-            <li>second</li>
-            <li>third</li>
-        </ol>
-    </ol>
+
+    <!-- 2. 사이트 내 링크: href="파일이름" → 같은 저장소 안의 다른 파일로 이동 -->
+    <h2>2. 사이트 내 링크</h2>
+    <ul>
+        <li><a href="index.html">목차(index.html)로</a></li>
+        <li><a href="test.html">test.html로</a></li>
+        <li><a href="Elements.html">HTML 요소 도감으로</a></li>
+    </ul>
+
+    <!-- 3. 외부 링크: href="https://..." → 다른 사이트로 이동 -->
+    <h2>3. 외부 링크</h2>
+    <ul>
+        <li><a href="https://github.com">GitHub (현재 탭에서 열기)</a></li>
+        <li><a href="https://developer.mozilla.org/ko/" target="_blank">MDN 문서 (새 탭에서 열기)</a></li>
+    </ul>
+
+    <!-- 페이지 내 링크가 잘 보이도록 일부러 긴 공간을 만들었어요 -->
+    <div style="height: 1000px;"></div>
+
+    <h2 id="part1">1부</h2>
+    <p>"1부로 이동"을 누르면 여기로 와요.</p>
+    <p><a href="#top">맨 위로</a></p>
+
+    <div style="height: 1000px;"></div>
+
+    <h2 id="part2">2부</h2>
+    <p>"2부로 이동"을 누르면 여기로 와요.</p>
+    <p><a href="#top">맨 위로</a></p>
 </body>
 </html>
